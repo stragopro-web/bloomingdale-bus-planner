@@ -1,0 +1,8 @@
+{
+  "name": "Bloomingdale Spa Bus Planner v3",
+  "short_name": "Bloomingdale Bus",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f4f0e7",
+  "theme_color": "#171815"
+}
