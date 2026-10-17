@@ -61,7 +61,7 @@ function renderRouteInfo(){
   html+='<ol class="accesssteps">'+step('Αφετηρία & πρόσβαση στη στάση',originBody)+step('Λεωφορείο & κατεύθυνση',busBody)+step('Στάση αποβίβασης',arrivalBody)+step('Άφιξη στον προορισμό',walkBody)+'</ol>';
  }
  if(dest.kind==='business')html+='<p class="hint">'+(dest.accessVerified?'Η πρόσβαση ελέγχθηκε από διαχειριστή στις '+escapeHTML(dest.verifiedDate)+'.':'Η πρόσβαση δεν έχει επιβεβαιωθεί από διαχειριστή.')+'</p>';
- html+='<div class="routetimes"><b>Ώρες αναχώρησης & διάρκεια</b><p>Δεν υπάρχουν επιβεβαιωμένοι χρόνοι ή ζωντανές αναχωρήσεις στην εφαρμογή. Έλεγξέ τα στις οδηγίες ή στην επίσημη τηλεματική πριν ξεκινήσεις.</p></div><div class="detailactions">'+link('Πλήρης διαδρομή στο Google Maps',routeLink(origin,dest,mode))+link('Επίσημη τηλεματική αστικού','https://chania.citybus.gr/el/stops')+'</div>';
+ html+='<div class="routetimes"><b>'+(mode==='transit'?'Ώρες αναχώρησης & διάρκεια':'Διάρκεια & απόσταση διαδρομής')+'</b><p>'+(mode==='transit'?'Δεν υπάρχουν επιβεβαιωμένοι χρόνοι ή ζωντανές αναχωρήσεις στην εφαρμογή. Έλεγξέ τα στις οδηγίες ή στην επίσημη τηλεματική πριν ξεκινήσεις.':'Η πραγματική πορεία, η απόσταση και η εκτίμηση χρόνου υπολογίζονται στις οδηγίες Google Maps.')+'</p></div><div class="detailactions">'+link('Πλήρης διαδρομή στο Google Maps',routeLink(origin,dest,mode))+(mode==='transit'?link('Επίσημη τηλεματική αστικού','https://chania.citybus.gr/el/stops'):'')+'</div>';
  $('detail').innerHTML=html;$('detail').classList.add('accessguide');
  return true;
 }
