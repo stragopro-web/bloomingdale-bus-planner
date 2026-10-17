@@ -1,7 +1,7 @@
 'use strict';
 const {createService,problem}=require('./admin-core.cjs');
 const stops=require('../stops.json');
-const bootstrapHash='f8542f122338d35d2f0219a9cf274386cb64d8d4350bdcf2e864de36c773d14b';
+const bootstrapHash='28a0ea06ca210670b4b9de8a36b227f7053a1ce3607efcdcbc54f0852fcb3919';
 let service;
 function getService(){if(service)return service;const blob=require('@vercel/blob');const storage={
  async read(path){const result=await blob.get(path,{access:'private',useCache:false});if(!result)return null;if(result.statusCode!==200)throw Error('Storage read failed');return {data:await new Response(result.stream).json(),etag:result.blob.etag};},
