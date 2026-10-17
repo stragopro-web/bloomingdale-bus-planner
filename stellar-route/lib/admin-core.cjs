@@ -33,15 +33,21 @@ function isPublic(b,now=Date.now()){
 function createService(storage,{bootstrapHash,stops=[],now=Date.now}={}){
  const read=async p=>storage.read(p),write=async(p,data,etag)=>storage.write(p,data,etag);
  async function change(path,fn){for(let i=0;i<4;i++){const old=await read(path);const next=await fn(old?.data);try{await write(path,next,old?.etag);return next}catch(e){if(!storage.conflict(e)||i===3)throw e}}}
- async function session(token){if(!token||!/^[A-Za-z0-9_-]{43}$/.test(token))return null;const r=await read('sessions/'+hash(token)+'.json');return r?.data.expires>now()?r.data:null;}
- async function makeSession(){const token=crypto.randomBytes(32).toString('base64url');await write('sessions/'+hash(token)+'.json',{expires:now()+8*3600000});return token;}
+ async function session(token){if(!token||!/^[A-Za-z0-9_-]{43}$/.test(token))return null;const r=await read('sessions/'+hash(token)+'.json');if(!r||r.data.expires<=now())return null;const admin=await read('auth/admin.json');return r.data.version===admin?.data.passwordHash?r.data:null;}
+ async function makeSession(){const token=crypto.randomBytes(32).toString('base64url'),admin=await read('auth/admin.json');await write('sessions/'+hash(token)+'.json',{expires:now()+8*3600000,version:admin.data.passwordHash});return token;}
  async function throttle(ip){const key='limits/'+hash(ip+':'+Math.floor(now()/900000))+'.json';const value=await change(key,old=>({attempts:(old?.attempts||0)+1}));if(value.attempts>8)throw problem(429,'Πολλές προσπάθειες. Δοκίμασε ξανά σε 15 λεπτά.');}
  async function auth(action,body,token,ip){
   if(action==='status'){const admin=await read('auth/admin.json');return {initialized:!!admin,authenticated:!!await session(token)};}
   if(action==='logout'){if(token)await change('sessions/'+hash(token)+'.json',()=>({expires:0}));return {ok:true};}
   await throttle(ip);
   const existing=await read('auth/admin.json');
-  if(action==='setup'){
+  if(action==='password'){
+   if(!await session(token))throw problem(401,'Χρειάζεται σύνδεση διαχειριστή.');
+   if(typeof body.currentPassword!=='string'||body.currentPassword.length>200||!same((await scrypt(body.currentPassword,existing.data.salt,64)).toString('hex'),existing.data.passwordHash))throw problem(401,'Ο τρέχων κωδικός δεν είναι σωστός.');
+   if(typeof body.password!=='string'||body.password.length<12||body.password.length>200)throw problem(400,'Ο νέος κωδικός πρέπει να έχει τουλάχιστον 12 χαρακτήρες.');
+   const salt=crypto.randomBytes(16).toString('hex'),passwordHash=(await scrypt(body.password,salt,64)).toString('hex');
+   await write('auth/admin.json',{...existing.data,salt,passwordHash},existing.etag);
+  }else if(action==='setup'){
    if(existing)throw problem(409,'Η αρχική ενεργοποίηση έχει ήδη ολοκληρωθεί.');
    if(!bootstrapHash||!same(hash(body.setupKey||''),bootstrapHash))throw problem(403,'Χρειάζεται ο ιδιωτικός σύνδεσμος αρχικής ενεργοποίησης.');
    if(typeof body.password!=='string'||body.password.length<12||body.password.length>200)throw problem(400,'Ο κωδικός πρέπει να έχει τουλάχιστον 12 χαρακτήρες.');
