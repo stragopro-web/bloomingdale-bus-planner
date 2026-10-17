@@ -26,7 +26,7 @@ async function handle(req,res,kind){
   let body=typeof req.body==='string'?JSON.parse(req.body):req.body||{};
   if(JSON.stringify(body).length>2900000)throw problem(413,'Το αρχείο είναι πολύ μεγάλο.');
   let result;
-  if(['setup','login','logout'].includes(action)){
+  if(['setup','login','logout','password'].includes(action)){
    result=await service.auth(action,body,token,String(req.headers['x-forwarded-for']||'unknown').split(',')[0]);
    if(result.token){res.setHeader('Set-Cookie','stellar_admin='+result.token+'; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=28800');delete result.token;}
    if(action==='logout')res.setHeader('Set-Cookie','stellar_admin=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0');
