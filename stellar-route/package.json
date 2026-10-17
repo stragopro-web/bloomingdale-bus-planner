@@ -1,0 +1,1 @@
+{"name":"stellar-route-chania","private":true,"version":"1.0.0","scripts":{"build":"node build.cjs","test":"node admin-check.cjs && node check.cjs"},"dependencies":{"@vercel/blob":"2.8.2"}}
